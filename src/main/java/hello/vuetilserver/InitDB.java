@@ -8,6 +8,7 @@ import hello.vuetilserver.repository.MemberRepository;
 import hello.vuetilserver.repository.PostsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
@@ -19,14 +20,15 @@ public class InitDB {
 
     private final MemberRepository memberRepository;
     private final PostsRepository postsRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostConstruct
     public void init() {
-        MemberDto memberDto = new MemberDto("a@a.com", 123L, "aaa");
+        MemberDto memberDto = new MemberDto("a@a.com", passwordEncoder.encode(("123")), "aaa");
         Member member = new Member(memberDto);
         memberRepository.save(member);
 
-        MemberDto memberDto2 = new MemberDto("b@b.com", 123L, "bbb");
+        MemberDto memberDto2 = new MemberDto("b@b.com", passwordEncoder.encode(("123")), "bbb");
         Member member2 = new Member(memberDto2);
         memberRepository.save(member2);
 

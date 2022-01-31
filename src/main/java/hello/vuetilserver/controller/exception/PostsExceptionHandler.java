@@ -49,7 +49,7 @@ public class PostsExceptionHandler {
         PostsErrorResponse error = new PostsErrorResponse();
 
         error.setStatus(HttpStatus.BAD_REQUEST.value());
-        error.setMessage("게시글 작성자와 게시글을 삭제하려는 사용자가 다릅니다.");
+        error.setMessage("게시글 작성자와 게시글을 조회 또는 삭제하려는 사용자가 다릅니다.");
         error.setTimeStamp(LocalDateTime.now());
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);

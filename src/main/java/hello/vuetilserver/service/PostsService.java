@@ -70,13 +70,16 @@ public class PostsService {
         return deletedPosts;
     }
 
-    public PostsFindDto getOnePosts(String postsId, String authorization) {
+    public PostsFindDto getOnePosts(String postsId, Member member) {
         log.info("게시글 한 개 조회 메서드 실행");
 
         Posts foundedPosts = postsRepository.findById(Long.parseLong(postsId)).orElseThrow(() -> new PostsNotFoundedException("게시글을 찾을 수 없습니다."));
-        Member member = memberRepository.findMemberByToken(authorization).orElseThrow(() -> new UnAuthorizedAccessException("인증되지 않은 사용자의 접근입니다."));
+        Member foundedMember = memberRepository.findMemberByUsername(member.getUsername()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다"));
+        log.info("foundedPostsCreatedBy = " + foundedPosts.getCreatedBy());
+        log.info("foundedMember = " + foundedMember);
+        log.info("member = " + member.toString());
 
-        if (!foundedPosts.getCreatedBy().equals(member)) {
+        if (!foundedPosts.getCreatedBy().equals(foundedMember)) {
             log.info("작성자와 수정자가 다릅니다.");
             throw new PostsNotMatchException("작성자와 수정자가 다릅니다.");
         }

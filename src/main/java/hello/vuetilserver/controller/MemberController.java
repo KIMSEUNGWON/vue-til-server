@@ -32,16 +32,18 @@ public class MemberController {
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody MemberLoginDto memberLoginDto) {
         log.info("memberLoginDto = " + memberLoginDto.getUsername());
-        Member findMember = memberService.findMember(memberLoginDto);
-        MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(findMember);
+//        Member findMember = memberService.findMember(memberLoginDto);
+//        MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(findMember);
+        Map<String, Object> findMemberAndTokenString = memberService.login(memberLoginDto);
 
-        HttpHeaders httpHeaders = new HttpHeaders();
+//        HttpHeaders httpHeaders = new HttpHeaders();
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("user", memberLoginSuccessDto);
-        result.put("token", findMember.getToken());
-        httpHeaders.add("Authorization", findMember.getToken());
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("user", memberLoginSuccessDto);
+//        result.put("token", findMember.getToken());
+//        httpHeaders.add("Authorization", findMember.getToken());
 
-        return result;
+//        return result;
+        return findMemberAndTokenString;
     }
 }

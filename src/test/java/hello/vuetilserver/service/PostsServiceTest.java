@@ -3,14 +3,12 @@ package hello.vuetilserver.service;
 import hello.vuetilserver.domain.Member;
 import hello.vuetilserver.domain.Posts;
 import hello.vuetilserver.domain.dto.MemberLoginDto;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -24,7 +22,7 @@ class PostsServiceTest {
     @Test
     void deleteTest() {
         //given
-        MemberLoginDto memberLoginDto = new MemberLoginDto("a@a.com", 123L);
+        MemberLoginDto memberLoginDto = new MemberLoginDto("a@a.com", "123");
         Member member = memberService.findMember(memberLoginDto);
         String postsId = "3";
         String authorization = member.getToken();

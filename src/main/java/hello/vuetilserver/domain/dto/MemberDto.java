@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class MemberDto {
 
     private String username;
-    private Long password;
+    private String password;
     private String nickname;
 }

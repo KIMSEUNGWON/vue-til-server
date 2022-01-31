@@ -8,5 +8,5 @@ import lombok.*;
 public class MemberLoginDto {
 
     private String username;
-    private Long password;
+    private String password;
 }

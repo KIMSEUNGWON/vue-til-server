@@ -13,6 +13,7 @@ import hello.vuetilserver.service.PostsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -66,12 +67,14 @@ public class PostsController {
         return "success";
     }
 
+    //https://velog.io/@solchan/Spring-Security-AuthenticationPrincipal-%EB%A1%9C%EA%B7%B8%EC%9D%B8%ED%95%9C-%EC%82%AC%EC%9A%A9%EC%9E%90-%EC%A0%95%EB%B3%B4%EB%A5%BC-%EB%B0%9B%EC%95%84%EC%98%A4%EA%B8%B0
     @GetMapping("/{id}")
-    public PostsFindDto getOnePosts(@PathVariable String id, @RequestHeader("Authorization") String authorization) {
+    public PostsFindDto getOnePosts(@PathVariable String id, @AuthenticationPrincipal Member member) {
         log.info("posts id = " + id);
-        log.info("authorization = " + authorization);
+        log.info("member = " + member.getUsername());
+        member.getClass();
 
-        PostsFindDto result = postsService.getOnePosts(id, authorization);
+        PostsFindDto result = postsService.getOnePosts(id, member);
 
         return result;
     }
