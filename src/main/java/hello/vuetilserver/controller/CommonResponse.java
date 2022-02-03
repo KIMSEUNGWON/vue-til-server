@@ -1,4 +1,4 @@
-package hello.vuetilserver.controller.exception;
+package hello.vuetilserver.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostsErrorResponse {
+public class CommonResponse {
 
+    private boolean success;
     private int status;
     private String message;
     private LocalDateTime timeStamp;

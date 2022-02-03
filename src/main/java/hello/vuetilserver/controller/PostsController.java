@@ -26,10 +26,10 @@ public class PostsController {
     private final MemberService memberService;
 
     @GetMapping("/")
-    public Result posts(@RequestHeader("Authorization") String authorization) throws Exception {
-        log.info("authorization = " + authorization);
+    public Result posts(@AuthenticationPrincipal Member member) throws Exception {
+        log.info("member = " + member.getUsername());
 
-        if (authorization == "") {
+        if (member == null) {
             log.info("인증 에러 발생");
             throw new UnAuthorizedAccessException("인증되지 않은 사용자의 접근");
         }
@@ -38,19 +38,10 @@ public class PostsController {
     }
 
     @PostMapping(value = "/")
-    public PostsSaveResultDto createOnePost(@RequestBody PostsSaveDto postsSaveDto, @RequestHeader("Authorization") String authorization) {
-        log.info("authorization = " + authorization);
+    public PostsSaveResultDto createOnePost(@RequestBody PostsSaveDto postsSaveDto, @AuthenticationPrincipal Member member) {
+        log.info("member = " + member.getUsername());
         log.info("postsSaveDto = " + postsSaveDto.getTitle());
 
-        Member member = memberService.findMemberByToken(authorization);
-        if (postsService.lengthExceedContents(postsSaveDto)) {
-            log.info("게시글은 200자를 넘기면 안됩니다");
-            throw new PostsLengthContentException("게시글은 글자 수 200자를 넘기면 안됩니다");
-        }
-        if (postsService.duplicatedTitle(postsSaveDto)) {
-            log.info("중복된 게시글 제목 오류");
-            throw new PostsDuplicatedTitleException("이미 존재하는 게시글 제목입니다.");
-        }
         Posts savedPosts = postsService.save(postsSaveDto, member);
         PostsSaveResultDto postsSaveResultDto = new PostsSaveResultDto(savedPosts);
 
@@ -58,13 +49,13 @@ public class PostsController {
     }
 
     @DeleteMapping("/{id}")
-    public String deleteOnePosts(@PathVariable("id") String id, @RequestHeader("Authorization") String authorization) {
+    public String deleteOnePosts(@PathVariable("id") String id, @AuthenticationPrincipal Member member) {
         log.info("posts id = " + id);
-        log.info("authorization = " + authorization);
+        log.info("member = " + member.getUsername());
 
-        postsService.deleteOnePosts(id, authorization);
+        postsService.deleteOnePosts(id, member);
 
-        return "success";
+        return id;
     }
 
     //https://velog.io/@solchan/Spring-Security-AuthenticationPrincipal-%EB%A1%9C%EA%B7%B8%EC%9D%B8%ED%95%9C-%EC%82%AC%EC%9A%A9%EC%9E%90-%EC%A0%95%EB%B3%B4%EB%A5%BC-%EB%B0%9B%EC%95%84%EC%98%A4%EA%B8%B0
@@ -81,12 +72,12 @@ public class PostsController {
 
     //https://cheese10yun.github.io/spring-jpa-best-06/
     @PutMapping("/{id}")
-    public PostsEditDto editOnePosts(@PathVariable String id, @RequestBody PostsEditDto postsEditDto, @RequestHeader("Authorization") String authorization) {
+    public PostsEditDto editOnePosts(@PathVariable String id, @RequestBody PostsEditDto postsEditDto, @AuthenticationPrincipal Member member) {
         log.info("posts id = " + id);
-        log.info("authorization = " + authorization);
+        log.info("member = " + member.getUsername());
         log.info("postsEdit Dto = " + postsEditDto.getTitle() + ", " + postsEditDto.getContents());
 
-        PostsEditDto result = postsService.editOnePosts(id, postsEditDto, authorization);
+        PostsEditDto result = postsService.editOnePosts(id, postsEditDto, member);
 
         return result;
     }

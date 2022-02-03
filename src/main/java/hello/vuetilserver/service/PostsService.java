@@ -1,8 +1,6 @@
 package hello.vuetilserver.service;
 
-import hello.vuetilserver.controller.exception.PostsNotFoundedException;
-import hello.vuetilserver.controller.exception.PostsNotMatchException;
-import hello.vuetilserver.controller.exception.UnAuthorizedAccessException;
+import hello.vuetilserver.controller.exception.*;
 import hello.vuetilserver.domain.Member;
 import hello.vuetilserver.domain.Posts;
 import hello.vuetilserver.domain.dto.PostsEditDto;
@@ -31,6 +29,16 @@ public class PostsService {
     public Posts save(PostsSaveDto postsSaveDto, Member member) {
         Posts posts = new Posts(postsSaveDto, member);
         log.info("게시글 한 개 저장 메소드 실행");
+
+        if (this.lengthExceedContents(postsSaveDto)) {
+            log.info("게시글은 200자를 넘기면 안됩니다");
+            throw new PostsLengthContentException("게시글은 글자 수 200자를 넘기면 안됩니다");
+        }
+        if (this.duplicatedTitle(postsSaveDto)) {
+            log.info("중복된 게시글 제목 오류");
+            throw new PostsDuplicatedTitleException("이미 존재하는 게시글 제목입니다.");
+        }
+
         postsRepository.save(posts);
         return posts;
     }
@@ -46,21 +54,21 @@ public class PostsService {
     }
 
     @Transactional
-    public Posts deleteOnePosts(String postsId, String authorization) {
+    public Posts deleteOnePosts(String postsId, Member member) {
         log.info("게시글 한 개 삭제 메서드 실행");
         log.info("posts id = " + postsId);
-        log.info("authorization = " + authorization);
+        log.info("member = " + member.getUsername());
 
-        if (authorization == "") {
+        if (member == null) {
             log.info("인증 에러 발생");
             throw new UnAuthorizedAccessException("인증되지 않은 사용자의 접근");
         }
 
         //https://krksap.tistory.com/1515
         Posts deletedPosts = postsRepository.findById(Long.parseLong(postsId)).orElseThrow(() -> new PostsNotFoundedException("게시글을 찾을 수 없습니다."));
-        Member member = memberRepository.findMemberByToken(authorization).orElseThrow(() -> new UnAuthorizedAccessException("인증되지 않은 사용자의 접근입니다."));
+        Member foundedMember = memberRepository.findMemberByUsername(member.getUsername()).orElseThrow(() -> new UnAuthorizedAccessException("인증되지 않은 사용자의 접근입니다."));
 
-        if (!deletedPosts.getCreatedBy().equals(member)) {
+        if (!deletedPosts.getCreatedBy().equals(foundedMember)) {
             log.info("작성자와 삭제자가 다릅니다.");
             throw new PostsNotMatchException("작성자와 삭제자가 다릅니다.");
         }
@@ -74,7 +82,7 @@ public class PostsService {
         log.info("게시글 한 개 조회 메서드 실행");
 
         Posts foundedPosts = postsRepository.findById(Long.parseLong(postsId)).orElseThrow(() -> new PostsNotFoundedException("게시글을 찾을 수 없습니다."));
-        Member foundedMember = memberRepository.findMemberByUsername(member.getUsername()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다"));
+        Member foundedMember = memberRepository.findMemberByUsername(member.getUsername()).orElseThrow(() -> new MemberNotExistException("존재하지 않는 회원입니다"));
         log.info("foundedPostsCreatedBy = " + foundedPosts.getCreatedBy());
         log.info("foundedMember = " + foundedMember);
         log.info("member = " + member.toString());
@@ -90,15 +98,20 @@ public class PostsService {
     }
 
     @Transactional
-    public PostsEditDto editOnePosts(String postsId, PostsEditDto postsEditDto, String authorization) {
+    public PostsEditDto editOnePosts(String postsId, PostsEditDto postsEditDto, Member member) {
         log.info("게시글 한 개 수정 메서드 실행");
 
         Posts foundedPosts = postsRepository.findById(Long.parseLong(postsId)).orElseThrow(() -> new PostsNotFoundedException("게시글을 찾을 수 없습니다."));
-        Member member = memberRepository.findMemberByToken(authorization).orElseThrow(() -> new UnAuthorizedAccessException("인증되지 않은 사용자의 접근입니다."));
+        Member foundedMember = memberRepository.findMemberByUsername(member.getUsername()).orElseThrow(() -> new UnAuthorizedAccessException("인증되지 않은 사용자의 접근입니다."));
 
-        if (!foundedPosts.getCreatedBy().equals(member)) {
+        if (!foundedPosts.getCreatedBy().equals(foundedMember)) {
             log.info("작성자와 수정자가 다릅니다.");
             throw new PostsNotMatchException("작성자와 수정자가 다릅니다.");
+        }
+
+        if (postsRepository.findPostsByTitle(postsEditDto.getTitle()).isPresent()) {
+            log.info("중복된 게시글 제목 오류");
+            throw new PostsDuplicatedTitleException("이미 존재하는 게시글 제목입니다.");
         }
 
         foundedPosts.updateTitleAndContents(postsEditDto);

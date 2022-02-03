@@ -1,10 +1,15 @@
 package hello.vuetilserver.service;
 
 import hello.vuetilserver.config.security.JwtTokenProvider;
+import hello.vuetilserver.controller.exception.MemberChangePasswordNotMatchException;
+import hello.vuetilserver.controller.exception.MemberNotExistException;
+import hello.vuetilserver.controller.exception.MemberPasswordNotMatchException;
+import hello.vuetilserver.controller.exception.UnAuthorizedAccessException;
 import hello.vuetilserver.domain.Member;
 import hello.vuetilserver.domain.dto.MemberLoginDto;
 import hello.vuetilserver.domain.dto.MemberDto;
 import hello.vuetilserver.domain.dto.MemberLoginSuccessDto;
+import hello.vuetilserver.domain.dto.MemberUpdateDto;
 import hello.vuetilserver.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +31,12 @@ public class MemberService {
 
     @Transactional
     public void save(MemberDto memberDto) {
-        Member member = new Member(memberDto);
         log.info("회원 저장 메소드 실행");
         memberRepository.save(Member.builder()
                 .username(memberDto.getUsername())
                 .password(passwordEncoder.encode((memberDto.getPassword())))
-                .roles(Collections.singletonList("ROLE_USER")) //최초 가입시 USER로 설정
+                .nickname(memberDto.getNickname())
+                .roles(Collections.singletonList("USER")) //최초 가입시 USER로 설정
                 .build());
     }
 
@@ -44,14 +47,14 @@ public class MemberService {
 
     public Member findMember(MemberLoginDto memberLoginDto) {
         log.info("회원 단건 조회 메서드 실행");
-        return memberRepository.findMemberByUsername(memberLoginDto.getUsername()).orElseThrow(() -> new IllegalArgumentException("가입되지 않은 E-Mail 입니다"));
+        return memberRepository.findMemberByUsername(memberLoginDto.getUsername()).orElseThrow(() -> new MemberNotExistException("존재하지 않는 회원입니다."));
     }
 
     public Map<String, Object> login(MemberLoginDto memberLoginDto) {
         Map<String, Object> result = new HashMap<>();
         Member findMember = findMember(memberLoginDto);
         if (!passwordEncoder.matches(memberLoginDto.getPassword(), findMember.getPassword())) {
-            throw new IllegalArgumentException("잘못된 비밀번호 입니다.");
+            throw new MemberPasswordNotMatchException("잘못된 비밀번호 입니다.");
         }
         MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(findMember);
         result.put("user", memberLoginSuccessDto);
@@ -60,8 +63,70 @@ public class MemberService {
         return result;
     }
 
-    public Member findMemberByToken(String token) {
-        log.info("토큰을 이용한 회원 단건 조회 메서드 실행");
-        return memberRepository.findMemberByToken(token).get();
+    public List<MemberLoginSuccessDto> findAllMembers() {
+        List<Member> members = memberRepository.findAll();
+
+        return members.stream()
+                .map(m -> new MemberLoginSuccessDto(m.getUsername(), m.getNickname()))
+                .collect(Collectors.toList());
+    }
+
+    public MemberLoginSuccessDto findMemberById(String id, Member member) {
+        if (Long.parseLong(id) != member.getId()) {
+            throw new UnAuthorizedAccessException("로그인 맴버와 조회 맴버가 다릅니다.");
+        }
+        Member foundedMember = memberRepository.findById(Long.parseLong(id)).orElseThrow(() -> new MemberNotExistException("존재하지 않는 맴버입니다."));
+
+        MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(foundedMember);
+        return memberLoginSuccessDto;
+    }
+
+    public MemberLoginSuccessDto findMemberByUsername(String username) {
+        Member foundedMember = memberRepository.findMemberByUsername(username).orElseThrow(() -> new MemberNotExistException("존재하지 않는 맴버입니다."));
+
+        MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(foundedMember);
+        return memberLoginSuccessDto;
+    }
+
+    @Transactional
+    public MemberLoginSuccessDto updateMember(String username, MemberUpdateDto memberUpdateDto, Member member) {
+        Member foundedMember = memberRepository.findMemberByUsername(username).orElseThrow(() -> new MemberNotExistException("존재하지 않는 맴버입니다."));
+        if (member.getId() == null) {
+            throw new MemberNotExistException("없는 회원입니다.");
+        }
+
+        if (!passwordEncoder.matches(memberUpdateDto.getCurrentPassword(), foundedMember.getPassword())) {
+            throw new MemberPasswordNotMatchException("현재 비밀번호가 다릅니다");
+        }
+
+        log.info("password" + memberUpdateDto.getChangePassword());
+        log.info("password" + memberUpdateDto.getChangePasswordCheck());
+        log.info("password" + memberUpdateDto.getChangePasswordCheck().equals(memberUpdateDto.getChangePassword()));
+        log.info("password" + (memberUpdateDto.getChangePassword() != memberUpdateDto.getChangePasswordCheck()));
+
+
+        if (!memberUpdateDto.getChangePassword().equals(memberUpdateDto.getChangePasswordCheck())) {
+            throw new MemberChangePasswordNotMatchException("바꾸려는 비밀번호가 다릅니다.");
+        }
+
+        foundedMember.update(memberUpdateDto.getUsername(), passwordEncoder.encode((memberUpdateDto.getChangePassword())), memberUpdateDto.getNickname());
+
+        MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(foundedMember);
+
+        return memberLoginSuccessDto;
+    }
+
+    @Transactional
+    public MemberLoginSuccessDto deleteMember(String username, Member member) {
+        if (member.getId() == null) {
+            throw new MemberNotExistException("없는 회원입니다.");
+        }
+
+        Member foundedMember = memberRepository.findMemberByUsername(username).orElseThrow(() -> new MemberNotExistException("없는 회원입니다."));
+
+        memberRepository.delete(foundedMember);
+        MemberLoginSuccessDto memberLoginSuccessDto = new MemberLoginSuccessDto(foundedMember);
+
+        return memberLoginSuccessDto;
     }
 }

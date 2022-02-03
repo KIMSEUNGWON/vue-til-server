@@ -35,21 +35,26 @@ public class Member implements UserDetails {
     @Column(name = "nickname")
     private String nickname;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Posts> postsList = new ArrayList<>();
 
-    @Column(unique = true)
-    private String token;
+//    @Column(unique = true)
+//    private String token;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Role role;
+
     public Member(MemberDto memberDto) {
         this.username = memberDto.getUsername();
         this.password = memberDto.getPassword();
         this.nickname = memberDto.getNickname();
-        this.token = UUID.randomUUID().toString();
+        this.role = Role.USER;
+//        this.token = UUID.randomUUID().toString();
     }
 
     public Member(MemberLoginDto memberLoginDto) {
@@ -82,5 +87,11 @@ public class Member implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void update(String username, String password, String nickname) {
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
     }
 }
