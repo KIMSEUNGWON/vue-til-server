@@ -50,6 +50,11 @@ public class MemberService {
         return memberRepository.findMemberByUsername(memberLoginDto.getUsername()).orElseThrow(() -> new MemberNotExistException("존재하지 않는 회원입니다."));
     }
 
+    public Member findMember(String username) {
+        log.info("회원 단건 조회 메서드 실행");
+        return memberRepository.findMemberByUsername(username).orElseThrow(() -> new MemberNotExistException("존재하지 않는 멤버입니다."));
+    }
+
     public Map<String, Object> login(MemberLoginDto memberLoginDto) {
         Map<String, Object> result = new HashMap<>();
         Member findMember = findMember(memberLoginDto);

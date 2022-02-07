@@ -38,8 +38,8 @@ public class Member implements UserDetails {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Posts> postsList = new ArrayList<>();
 
-//    @Column(unique = true)
-//    private String token;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "friendingMemberId", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Friends> friendsList = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
@@ -54,12 +54,23 @@ public class Member implements UserDetails {
         this.password = memberDto.getPassword();
         this.nickname = memberDto.getNickname();
         this.role = Role.USER;
-//        this.token = UUID.randomUUID().toString();
     }
 
     public Member(MemberLoginDto memberLoginDto) {
         this.username = memberLoginDto.getUsername();
         this.password = memberLoginDto.getPassword();
+    }
+
+    public void update(String username, String password, String nickname) {
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+    }
+
+    //==연관관계 메서드==//
+    public void addFriend(Friends friends) {
+        this.friendsList.add(friends);
+        friends.setFriendingMember(this);
     }
 
     @Override
@@ -87,11 +98,5 @@ public class Member implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public void update(String username, String password, String nickname) {
-        this.username = username;
-        this.password = password;
-        this.nickname = nickname;
     }
 }

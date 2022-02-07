@@ -1,7 +1,9 @@
 package hello.vuetilserver;
 
+import hello.vuetilserver.domain.Friends;
 import hello.vuetilserver.domain.Member;
 import hello.vuetilserver.domain.Posts;
+import hello.vuetilserver.domain.dto.FriendsDto;
 import hello.vuetilserver.domain.dto.MemberDto;
 import hello.vuetilserver.domain.dto.PostsSaveDto;
 import hello.vuetilserver.repository.MemberRepository;
@@ -39,5 +41,18 @@ public class InitDB {
         PostsSaveDto postsSaveDto2 = new PostsSaveDto("title2", "contents2");
         Posts posts2 = new Posts(postsSaveDto2, member2);
         postsRepository.save(posts2);
+
+        //friend
+        MemberDto memberDto3 = new MemberDto("c@c.com", passwordEncoder.encode(("123")), "ccc");
+        Member member3 = new Member(memberDto3);
+
+        MemberDto memberDto4 = new MemberDto("d@d.com", passwordEncoder.encode(("123")), "ddd");
+        Member member4 = new Member(memberDto4);
+
+        member3.addFriend(new Friends(member3, member.getId()));
+        member4.addFriend(new Friends(member4, member2.getId()));
+
+        memberRepository.save(member3);
+        memberRepository.save(member4);
     }
 }
