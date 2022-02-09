@@ -44,6 +44,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/members/**").authenticated() //https://jhhan009.tistory.com/31
                 .antMatchers("/api/posts/**").authenticated()
                 .antMatchers("/api/friends/**").authenticated()
+                .antMatchers("/api/messages/**").authenticated()
                 .anyRequest().permitAll() //그 외 나머지 요청은 누구나 접근 가능
                 .and()
                 .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler())

@@ -1,7 +1,6 @@
 package hello.vuetilserver.controller;
 
 import hello.vuetilserver.api.Result;
-import hello.vuetilserver.controller.exception.FriendsDuplicatedException;
 import hello.vuetilserver.domain.Member;
 import hello.vuetilserver.domain.dto.FriendsAddDto;
 import hello.vuetilserver.domain.dto.FriendsDto;

@@ -35,15 +35,24 @@ class FriendsServiceTest {
         Member friend = memberService.findMember(new MemberLoginDto("a@a.com", "123"));
 
         //when
-        List<FriendsDto> allFriendsList = friendsService.getAllFriendsList(friend);
-
-        for (FriendsDto friendsDto : allFriendsList) {
-            System.out.println("friendsDto = " + friendsDto);
-        }
+        List<FriendsDto> allFriendsList = friendsService.getAllFriendsList(member);
 
         //then
-//        assertThat(allFriendsList.get(0).getUsername()).isEqualTo(friend.getUsername());
-//        assertThat(allFriendsList.size()).isEqualTo(1);
+        assertThat(allFriendsList.get(0).getUsername()).isEqualTo(friend.getUsername());
+        assertThat(allFriendsList.size()).isEqualTo(1);
+    }
+
+    @Test
+    void getAllFriendsListEmptyTest() {
+        //given
+        Member member = memberService.findMember(new MemberLoginDto("a@a.com", "123"));
+
+        //when
+        List<FriendsDto> allFriendsList = friendsService.getAllFriendsList(member);
+
+        //then
+        assertThat(allFriendsList.size()).isEqualTo(0);
+        assertThat(allFriendsList).isEmpty();
     }
 
     @Test

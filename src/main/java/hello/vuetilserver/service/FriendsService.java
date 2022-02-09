@@ -30,10 +30,7 @@ public class FriendsService {
         log.info("member = " + member.getUsername());
 
         List<Friends> friendsList = friendsRepository.findAll(member).orElse(null);
-        if (friendsList == null) {
-            log.info("friend is null");
-            return null;
-        }
+
         List<FriendsDto> result = friendsList.stream()
                 .map(f -> {
                     Member friend = memberRepository.getById(f.getFriendedMemberId());

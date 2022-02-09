@@ -11,7 +11,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
@@ -40,6 +39,9 @@ public class Member implements UserDetails {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "friendingMemberId", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Friends> friendsList = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "senderId", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Messages> messagesList = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
@@ -71,6 +73,11 @@ public class Member implements UserDetails {
     public void addFriend(Friends friends) {
         this.friendsList.add(friends);
         friends.setFriendingMember(this);
+    }
+
+    public void addMessages(Messages messages) {
+        this.messagesList.add(messages);
+        messages.setSenderId(this);
     }
 
     @Override
