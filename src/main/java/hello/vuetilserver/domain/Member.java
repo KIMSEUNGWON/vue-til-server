@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static javax.persistence.CascadeType.ALL;
+
 @Entity
 @Getter
 @Builder
@@ -34,13 +36,13 @@ public class Member implements UserDetails {
     @Column(name = "nickname")
     private String nickname;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true, cascade = ALL)
     private List<Posts> postsList = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "friendingMemberId", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "friendingMemberId", orphanRemoval = true, cascade = ALL)
     private List<Friends> friendsList = new ArrayList<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "senderId", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "senderId", orphanRemoval = true, cascade = ALL)
     private List<Messages> messagesList = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -50,6 +52,9 @@ public class Member implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column
     private Role role;
+
+    @OneToMany(mappedBy = "member", cascade = ALL)
+    private List<ChatRoomsEnter> chatRoomsEnterList = new ArrayList<>();
 
     public Member(MemberDto memberDto) {
         this.username = memberDto.getUsername();
@@ -78,6 +83,10 @@ public class Member implements UserDetails {
     public void addMessages(Messages messages) {
         this.messagesList.add(messages);
         messages.setSenderId(this);
+    }
+
+    public void setChatRoomsEnter(ChatRoomsEnter chatRoomsEnter) {
+        this.chatRoomsEnterList.add(chatRoomsEnter);
     }
 
     @Override

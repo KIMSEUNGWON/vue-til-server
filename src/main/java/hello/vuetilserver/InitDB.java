@@ -1,13 +1,16 @@
 package hello.vuetilserver;
 
+import hello.vuetilserver.domain.ChatRooms;
 import hello.vuetilserver.domain.Friends;
 import hello.vuetilserver.domain.Member;
 import hello.vuetilserver.domain.Posts;
+import hello.vuetilserver.domain.dto.ChatRoomsCreateDto;
 import hello.vuetilserver.domain.dto.FriendsDto;
 import hello.vuetilserver.domain.dto.MemberDto;
 import hello.vuetilserver.domain.dto.PostsSaveDto;
 import hello.vuetilserver.repository.MemberRepository;
 import hello.vuetilserver.repository.PostsRepository;
+import hello.vuetilserver.service.ChatRoomsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +26,7 @@ public class InitDB {
     private final MemberRepository memberRepository;
     private final PostsRepository postsRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ChatRoomsService chatRoomsService;
 
     @PostConstruct
     public void init() {
@@ -54,5 +58,17 @@ public class InitDB {
 
         memberRepository.save(member3);
         memberRepository.save(member4);
+
+        ChatRoomsCreateDto chatRoomsCreateDto = new ChatRoomsCreateDto("chatRoom");
+        ChatRooms chatRooms = chatRoomsService.create(chatRoomsCreateDto, member);
+//        chatRoomsService.participant(chatRooms.getId(), member3);
+
+//        for (int i = 0; i < 15; i++) {
+//            String title = "chatRoom" + i;
+//            ChatRooms chatRooms = chatRoomsService.create(new ChatRoomsCreateDto(title), member);
+//            title = i + "";
+//            chatRoomsService.create(new ChatRoomsCreateDto(title), member3);
+//            chatRoomsService.participant(chatRooms.getId(), member3);
+//        }
     }
 }
